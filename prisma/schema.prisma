@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model athlete {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String?  @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  user       user?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model club {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  description    String?          @db.VarChar(255)
+  image          String?          @db.VarChar(255)
+  name           String           @db.VarChar(255)
+  created_at     DateTime         @default(now()) @db.Timestamp(6)
+  updated_at     DateTime         @default(now()) @db.Timestamp(6)
+  user_id        String           @db.Uuid
+  tenant_id      String           @db.VarChar(255)
+  user           user             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  training_group training_group[]
+  venue          venue[]
+}
+
+model coach {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String?  @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  user       user?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model training_day {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date              DateTime        @db.Date
+  venue_id          String?         @db.Uuid
+  training_group_id String?         @db.Uuid
+  created_at        DateTime        @default(now()) @db.Timestamp(6)
+  updated_at        DateTime        @default(now()) @db.Timestamp(6)
+  training_group    training_group? @relation(fields: [training_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  venue             venue?          @relation(fields: [venue_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model training_group {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schedule     String         @db.VarChar(255)
+  club_id      String?        @db.Uuid
+  created_at   DateTime       @default(now()) @db.Timestamp(6)
+  updated_at   DateTime       @default(now()) @db.Timestamp(6)
+  training_day training_day[]
+  club         club?          @relation(fields: [club_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String    @unique @db.VarChar(255)
+  firstName   String?   @db.VarChar(255)
+  lastName    String?   @db.VarChar(255)
+  roq_user_id String    @db.VarChar(255)
+  tenant_id   String    @db.VarChar(255)
+  created_at  DateTime  @default(now()) @db.Timestamp(6)
+  updated_at  DateTime  @default(now()) @db.Timestamp(6)
+  athlete     athlete[]
+  club        club[]
+  coach       coach[]
+}
+
+model venue {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String         @db.VarChar(255)
+  club_id      String?        @db.Uuid
+  created_at   DateTime       @default(now()) @db.Timestamp(6)
+  updated_at   DateTime       @default(now()) @db.Timestamp(6)
+  training_day training_day[]
+  club         club?          @relation(fields: [club_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
